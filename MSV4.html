@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Math Space - Prof Ahmed</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+    :root {
+      --primary-color: #AAEB00;
+      --secondary-color: #000000; /* stays black for buttons in both modes */
+      --accent-color: #8BC34A;
+      --light-color: #F5F9E9;
+      --dark-color: #1A1A1A;
+      --gray-color: #6c757d;
+      --success-color: #28a745;
+      --card-bg: #ffffff;
+      --page-bg: linear-gradient(135deg, var(--light-color) 0%, #ffffff 100%);
+      --text-main: var(--dark-color);
+      --muted: var(--gray-color);
+      --footer-bg: var(--dark-color);
+      --chip-bg: #333;
+      --table-stripe: var(--light-color);
+      --border-soft: #eee;
+    }
+
+    /* Dark mode overrides */
+    .dark {
+      --card-bg: #13161a;
+      --page-bg: linear-gradient(135deg, #0f1115 0%, #0b0d11 100%);
+      --text-main: #e9eef6;
+      --muted: #a9b3c1;
+      --footer-bg: #0d0f13;
+      --chip-bg: #1e222a;
+      --table-stripe: #171b21;
+      --border-soft: #222831;
+    }
+
+    body { background: var(--page-bg); color: var(--text-main); line-height: 1.6; min-height: 100vh; padding-bottom: 60px; }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+
+    header { background: rgba(255, 255, 255, 0.95); box-shadow: 0 2px 15px rgba(0,0,0,0.1); padding: 12px 0; position: sticky; top: 0; z-index: 100; backdrop-filter: saturate(120%) blur(4px); }
+    .dark header { background: rgba(20, 24, 29, 0.9); box-shadow: 0 2px 15px rgba(0,0,0,0.35); }
+
+    .header-content { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 45px; height: 45px; background: var(--primary-color); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; color: var(--secondary-color); }
+    .logo-text { display: flex; flex-direction: column; }
+    .logo-text h1 { font-size: 22px; font-weight: 700; color: var(--text-main); }
+    .logo-text span { font-size: 12px; color: var(--muted); }
+
+    nav ul { display: flex; list-style: none; gap: 12px; align-items: center; }
+    nav a { text-decoration: none; color: var(--text-main); font-weight: 500; padding: 8px 12px; border-radius: 8px; transition: all 0.25s; }
+    nav a:hover { background: var(--primary-color); color: var(--secondary-color); }
+
+    .toolbar { display: flex; gap: 8px; align-items: center; }
+    .chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--chip-bg); color: #fff; border-radius: 999px; font-size: 13px; cursor: pointer; border: 1px solid rgba(255,255,255,0.08); }
+    .chip i { font-size: 14px; }
+    .chip select { background: transparent; color: #fff; border: none; outline: none; font-weight: 600; cursor: pointer; }
+    .chip option { color: #111; }
+
+    .hero { text-align: center; padding: 60px 0; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23AAEB00" fill-opacity="0.1"/><path d="M0 0L100 100" stroke="%23AAEB00" stroke-opacity="0.2" stroke-width="2"/><path d="M100 0L0 100" stroke="%23AAEB00" stroke-opacity="0.2" stroke-width="2"/></svg>'); }
+    .hero h2 { font-size: 36px; margin-bottom: 18px; color: var(--text-main); }
+    .hero p { font-size: 18px; color: var(--muted); max-width: 700px; margin: 0 auto 28px; }
+
+    .btn { display: inline-block; padding: 12px 22px; background: var(--secondary-color); color: #fff; border: none; border-radius: 10px; font-weight: 600; font-size: 16px; cursor: pointer; text-decoration: none; transition: all 0.25s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.18); }
+    .btn-primary { background: var(--primary-color); color: var(--secondary-color); box-shadow: 0 4px 10px rgba(170,235,0,0.25); }
+    .btn-primary:hover { background: #99d400; }
+
+    .levels-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; margin: 40px 0; }
+    .level-card { background: var(--card-bg); border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.08); transition: transform 0.3s, box-shadow 0.3s; border: 1px solid var(--border-soft); }
+    .level-card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.18); }
+    .level-header { background: var(--primary-color); color: var(--secondary-color); padding: 20px; text-align: center; }
+    .level-header h3 { font-size: 20px; margin: 0; }
+    .level-body { padding: 20px; }
+    .level-body p { color: var(--muted); margin-bottom: 20px; }
+    .level-footer { display: flex; border-top: 1px solid var(--border-soft); padding: 15px 20px; gap: 10px; }
+    .level-footer .btn { flex: 1; text-align: center; padding: 10px 14px; font-size: 14px; }
+
+    .features { padding: 60px 0; background: var(--card-bg); border-top: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft); }
+    .section-title { text-align: center; margin-bottom: 40px; }
+    .section-title h2 { font-size: 32px; color: var(--text-main); margin-bottom: 15px; }
+    .section-title p { color: var(--muted); max-width: 700px; margin: 0 auto; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; }
+    .feature-card { text-align: center; padding: 30px 20px; border-radius: 12px; background: var(--light-color); transition: all 0.3s; }
+    .dark .feature-card { background: #192028; }
+    .feature-card:hover { background: var(--primary-color); transform: translateY(-5px); }
+    .feature-icon { width: 70px; height: 70px; margin: 0 auto 20px; background: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: var(--secondary-color); }
+    .feature-card:hover .feature-icon { background: #fff; }
+    .feature-card h3 { margin-bottom: 12px; font-size: 20px; }
+    .feature-card p { color: var(--muted); }
+    .feature-card:hover p { color: var(--secondary-color); }
+
+    footer { background: var(--footer-bg); color: #fff; padding: 40px 0; margin-top: 60px; }
+    .footer-content { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 30px; }
+    .footer-section { flex: 1; min-width: 250px; }
+    .footer-section h3 { font-size: 20px; margin-bottom: 20px; color: var(--primary-color); }
+    .footer-section p { margin-bottom: 15px; color: #ccc; }
+    .footer-section ul { list-style: none; }
+    .footer-section ul li { margin-bottom: 10px; }
+    .footer-section a { color: #ccc; text-decoration: none; transition: color 0.25s; }
+    .footer-section a:hover { color: var(--primary-color); }
+    .social-icons { display: flex; gap: 15px; margin-top: 20px; }
+    .social-icons a { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #333; border-radius: 50%; color: white; text-decoration: none; transition: all 0.25s; }
+    .social-icons a:hover { background: var(--primary-color); color: var(--secondary-color); transform: translateY(-3px); }
+    .copyright { text-align: center; padding-top: 30px; margin-top: 30px; border-top: 1px solid #444; color: #999; }
+
+    @media (max-width: 768px) {
+      .header-content { flex-direction: column; gap: 12px; }
+      nav ul { flex-wrap: wrap; justify-content: center; }
+      .hero h2 { font-size: 28px; }
+      .hero p { font-size: 16px; }
+      .levels-grid { grid-template-columns: 1fr; }
+      .footer-content { flex-direction: column; }
+    }
+
+    /* Lessons Page */
+    .lessons-container { background: var(--card-bg); border-radius: 15px; padding: 30px; margin: 30px 0; box-shadow: 0 5px 15px rgba(0,0,0,0.08); border: 1px solid var(--border-soft); }
+    .lessons-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--primary-color); }
+    .lessons-title { font-size: 28px; color: var(--text-main); }
+    .breadcrumb { display: flex; gap: 10px; font-size: 14px; color: var(--muted); }
+    .breadcrumb a { color: var(--primary-color); text-decoration: none; }
+    .lessons-table { width: 100%; border-collapse: collapse; margin: 20px 0; overflow: hidden; border-radius: 12px; }
+    .lessons-table th { background: var(--primary-color); color: var(--secondary-color); padding: 14px; text-align: right; }
+    .lessons-table td { padding: 14px; border-bottom: 1px solid var(--border-soft); }
+    .lessons-table tr:hover { background: var(--table-stripe); }
+    .download-buttons { display: flex; gap: 10px; }
+    .back-button { margin-top: 20px; display: inline-block; }
+
+    /* Admin */
+    .admin-panel { background: var(--card-bg); border-radius: 15px; padding: 30px; margin: 30px 0; box-shadow: 0 5px 15px rgba(0,0,0,0.08); border: 1px solid var(--border-soft); }
+    .admin-title { font-size: 24px; margin-bottom: 20px; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+    .admin-form { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .form-group { margin-bottom: 10px; }
+    .form-group label { display: block; margin-bottom: 6px; font-weight: 500; }
+    .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid var(--border-soft); background: transparent; border-radius: 8px; font-size: 16px; color: var(--text-main); }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(170, 235, 0, 0.18); }
+    .full-width { grid-column: 1 / -1; }
+    .message { padding: 14px; border-radius: 8px; margin: 14px 0; text-align: center; }
+    .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+    /* Login */
+    .login-container { max-width: 500px; margin: 50px auto; background: var(--card-bg); border-radius: 15px; padding: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); border: 1px solid var(--border-soft); }
+    .login-title { text-align: center; font-size: 28px; margin-bottom: 20px; color: var(--text-main); }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <div class="logo" style="cursor:pointer;" onclick="showPage('home')">
+          <div class="logo-icon">MS</div>
+          <div class="logo-text">
+            <h1 data-t="brand.title">Math Space</h1>
+            <span data-t="brand.subtitle">Prof Ahmed | Math</span>
+          </div>
+        </div>
+        <nav>
+          <ul>
+            <li><a href="#" onclick="showPage('home')" data-t="nav.home">الرئيسية</a></li>
+            <li><a href="#" onclick="showPage('levels')" data-t="nav.levels">المستويات</a></li>
+            <li><a href="#" onclick="showPage('admin-login')" data-t="nav.admin">لوحة الإدارة</a></li>
+          </ul>
+        </nav>
+        <div class="toolbar">
+          <!-- Language Switcher -->
+          <div class="chip" title="Language / اللغة">
+            <i class="fa-solid fa-language"></i>
+            <select id="lang-select" aria-label="Language selector">
+              <option value="ar">العربية</option>
+              <option value="fr">Français</option>
+            </select>
+          </div>
+          <!-- Dark mode -->
+          <button class="chip" id="theme-toggle" title="Dark Mode / الوضع الليلي">
+            <i class="fa-solid fa-moon"></i><span data-t="ui.dark">الوضع الليلي</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Home Page -->
+  <section id="home-page" class="page">
+    <section class="hero">
+      <div class="container">
+        <h2 data-t="hero.title">مرحبا بكم في Math Space</h2>
+        <p data-t="hero.desc">منصة تعليمية متكاملة لتعليم الرياضيات بمختلف المستويات الدراسية، تحت إشراف الأستاذ أحمد. نوفر دروسًا، تمارين، واختبارات لمساعدتك على إتقان الرياضيات.</p>
+        <a href="#" class="btn btn-primary" onclick="scrollToLevels()" data-t="hero.cta">ابدأ التعلم الآن</a>
+      </div>
+    </section>
+
+    <main class="container">
+      <div id="levels-section" class="levels-grid">
+        <!-- Cards -->
+        <div class="level-card">
+          <div class="level-header"><h3>TC Science</h3></div>
+          <div class="level-body"><p data-t="card.tc.desc">دروس الرياضيات الخاصة بمسلك العلوم للتلاميذ في الجذع المشترك علوم.</p></div>
+          <div class="level-footer">
+            <a href="#" class="btn" onclick="selectLevel('TC Science','S1')" data-t="ui.s1">الفصل الأول</a>
+            <a href="#" class="btn btn-primary" onclick="selectLevel('TC Science','S2')" data-t="ui.s2">الفصل الثاني</a>
+          </div>
+        </div>
+
+        <div class="level-card">
+          <div class="level-header"><h3>1 Bac Science</h3></div>
+          <div class="level-body"><p data-t="card.1s.desc">دروس الرياضيات الخاصة بمسلك العلوم للتلاميذ في السنة الأولى باكالوريا علوم.</p></div>
+          <div class="level-footer">
+            <a href="#" class="btn" onclick="selectLevel('1 bac Science','S1')" data-t="ui.s1">الفصل الأول</a>
+            <a href="#" class="btn btn-primary" onclick="selectLevel('1 bac Science','S2')" data-t="ui.s2">الفصل الثاني</a>
+          </div>
+        </div>
+
+        <div class="level-card">
+          <div class="level-header"><h3>2 Bac Science</h3></div>
+          <div class="level-body"><p data-t="card.2s.desc">دروس الرياضيات الخاصة بمسلك العلوم للتلاميذ في السنة الثانية باكالوريا علوم.</p></div>
+          <div class="level-footer">
+            <a href="#" class="btn" onclick="selectLevel('2 bac Science','S1')" data-t="ui.s1">الفصل الأول</a>
+            <a href="#" class="btn btn-primary" onclick="selectLevel('2 bac Science','S2')" data-t="ui.s2">الفصل الثاني</a>
+          </div>
+        </div>
+
+        <div class="level-card">
+          <div class="level-header"><h3>Tronc Commun</h3></div>
+          <div class="level-body"><p data-t="card.tcL.desc">دروس الرياضيات الخاصة بالمسلك المشترك للتلاميذ في الجذع المشترك.</p></div>
+          <div class="level-footer">
+            <a href="#" class="btn" onclick="selectLevel('Tronc commun letter','S1')" data-t="ui.s1">الفصل الأول</a>
+            <a href="#" class="btn btn-primary" onclick="selectLevel('Tronc commun letter','S2')" data-t="ui.s2">الفصل الثاني</a>
+          </div>
+        </div>
+
+        <div class="level-card">
+          <div class="level-header"><h3>1 Bac Letter</h3></div>
+          <div class="level-body"><p data-t="card.1L.desc">دروس الرياضيات الخاصة بمسلك الآداب والعلوم الإنسانية للتلاميذ في السنة الأولى باكالوريا.</p></div>
+          <div class="level-footer">
+            <a href="#" class="btn" onclick="selectLevel('1 bac letter','S1')" data-t="ui.s1">الفصل الأول</a>
+            <a href="#" class="btn btn-primary" onclick="selectLevel('1 bac letter','S2')" data-t="ui.s2">الفصل الثاني</a>
+          </div>
+        </div>
+
+        <div class="level-card">
+          <div class="level-header"><h3>2 Bac Letter</h3></div>
+          <div class="level-body"><p data-t="card.2L.desc">دروس الرياضيات الخاصة بمسلك الآداب والعلوم الإنسانية للتلاميذ في السنة الثانية باكالوريا.</p></div>
+          <div class="level-footer">
+            <a href="#" class="btn" onclick="selectLevel('2 bac letter','S1')" data-t="ui.s1">الفصل الأول</a>
+            <a href="#" class="btn btn-primary" onclick="selectLevel('2 bac letter','S2')" data-t="ui.s2">الفصل الثاني</a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <section class="features">
+      <div class="container">
+        <div class="section-title">
+          <h2 data-t="feat.title">مميزات منصتنا</h2>
+          <p data-t="feat.desc">نقدم لكم أفضل الطرق لتعلم الرياضيات بسهولة وفعالية</p>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-book"></i></div>
+            <h3 data-t="feat.courses">دروس شاملة</h3>
+            <p data-t="feat.courses.desc">دروس مفصلة تغطي كل جوانب المنهج الدراسي</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-file-pdf"></i></div>
+            <h3>PDF</h3>
+            <p data-t="feat.pdf.desc">تحميل ملخصات الدروس بصيغة PDF للطباعة</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-tasks"></i></div>
+            <h3 data-t="feat.exo">تمارين متنوعة</h3>
+            <p data-t="feat.exo.desc">تمارين مع الحلول لتطبيق ما تعلمته</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-video"></i></div>
+            <h3 data-t="feat.video">فيديوهات تعليمية</h3>
+            <p data-t="feat.video.desc">شروحات فيديو لتبسيط المفاهيم المعقدة</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <!-- Lessons Page -->
+  <section id="lessons-page" class="page hidden">
+    <div class="container">
+      <div class="lessons-container">
+        <div class="lessons-header">
+          <h2 class="lessons-title" id="lessons-page-title" data-t="lessons.title">دروس الرياضيات</h2>
+          <div class="breadcrumb" id="lessons-breadcrumb">
+            <a href="#" onclick="showPage('home')" data-t="nav.home">الرئيسية</a>
+            <span>/</span>
+            <span id="breadcrumb-level">المستويات</span>
+            <span>/</span>
+            <span id="breadcrumb-semester">الفصول</span>
+          </div>
+        </div>
+        <table class="lessons-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th data-t="lessons.col.title">اسم الدرس</th>
+              <th data-t="lessons.col.downloads">التحميلات</th>
+            </tr>
+          </thead>
+          <tbody id="lessons-list"></tbody>
+        </table>
+        <a href="#" class="btn back-button" onclick="backToLevels()" data-t="ui.back">العودة إلى المستويات</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Admin Login Page -->
+  <section id="admin-login-page" class="page hidden">
+    <div class="container">
+      <div class="login-container">
+        <h2 class="login-title" data-t="admin.login">تسجيل الدخول للإدارة</h2>
+        <div class="form-group">
+          <label for="email" data-t="admin.email">البريد الإلكتروني</label>
+          <input type="email" id="email" placeholder="email@example.com" />
+        </div>
+        <div class="form-group">
+          <label for="password" data-t="admin.pass">كلمة المرور</label>
+          <input type="password" id="password" placeholder="••••••••" />
+        </div>
+        <button class="btn btn-primary" onclick="adminLogin()" data-t="admin.loginBtn">تسجيل الدخول</button>
+        <div id="login-message"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Admin Panel Page -->
+  <section id="admin-panel-page" class="page hidden">
+    <div class="container">
+      <div class="admin-panel">
+        <h2 class="admin-title"><i class="fas fa-cog"></i> <span data-t="admin.panel">لوحة إدارة المحتوى</span></h2>
+        <div class="admin-form">
+          <div class="form-group">
+            <label for="admin-level" data-t="admin.level">المستوى</label>
+            <select id="admin-level">
+              <option value="TC Science">TC Science</option>
+              <option value="1 bac Science">1 Bac Science</option>
+              <option value="2 bac Science">2 Bac Science</option>
+              <option value="Tronc commun letter">Tronc Commun</option>
+              <option value="1 bac letter">1 Bac Letter</option>
+              <option value="2 bac letter">2 Bac Letter</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="admin-semester" data-t="admin.semester">الفصل</label>
+            <select id="admin-semester">
+              <option value="S1" data-t="ui.s1">الفصل الأول</option>
+              <option value="S2" data-t="ui.s2">الفصل الثاني</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="lesson-number" data-t="admin.lessonNo">رقم الدرس</label>
+            <input type="number" id="lesson-number" min="1" value="1" />
+          </div>
+          <div class="form-group">
+            <label for="lesson-title" data-t="admin.lessonTitle">عنوان الدرس</label>
+            <input type="text" id="lesson-title" readonly />
+          </div>
+          <div class="form-group full-width">
+            <label for="pdf-file">PDF</label>
+            <input type="file" id="pdf-file" accept="application/pdf" />
+          </div>
+          <div class="form-group full-width">
+            <label for="doc-file">Word</label>
+            <input type="file" id="doc-file" accept=".doc,.docx" />
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="uploadFiles()" data-t="admin.upload">رفع الملفات</button>
+        <div id="upload-message"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3 data-t="footer.aboutTitle">عن Math Space</h3>
+          <p data-t="footer.about1">منصة تعليمية متخصصة في تدريس الرياضيات بمختلف المستويات الدراسية، تحت إشراف الأستاذ أحمد.</p>
+          <p data-t="footer.about2">نهدف إلى تبسيط الرياضيات وجعلها متاحة للجميع.</p>
+        </div>
+        <div class="footer-section">
+          <h3 data-t="footer.links">روابط سريعة</h3>
+          <ul>
+            <li><a href="#" onclick="showPage('levels')" data-t="nav.levels">المستويات</a></li>
+            <li><a href="#" onclick="showPage('admin-login')" data-t="nav.admin">لوحة الإدارة</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3 data-t="footer.contact">اتصل بنا</h3>
+          <p><i class="fas fa-envelope"></i> pa.mathspace@gmail.com</p>
+          <p><i class="fas fa-phone"></i> 0781058996</p>
+          <p><i class="fas fa-map-marker-alt"></i> <span data-t="footer.addr">طنجة، المغرب</span></p>
+          <div class="social-icons">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+          </div>
+        </div>
+      </div>
+      <div class="copyright">
+        <p>&copy; 2025 Math Space. <span data-t="footer.rights">جميع الحقوق محفوظة</span></p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    /* ===================== Config & Clients ===================== */
+    const SUPABASE_URL = "https://epopbjwuymigeyqjawch.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwb3Biand1eW1pZ2V5cWphd2NoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU2NDA5NzIsImV4cCI6MjA3MTIxNjk3Mn0.fT5o4mGgDoG1cRhOIPwE8hXFMPQqiNrSgDHKTtprlc4";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    /* ===================== i18n Dictionary ===================== */
+    const i18n = {
+      ar: {
+        'brand.title': 'Math Space',
+        'brand.subtitle': 'Prof Ahmed | Math',
+        'nav.home': 'الرئيسية',
+        'nav.levels': 'المستويات',
+        'nav.admin': 'لوحة الإدارة',
+        'ui.dark': 'الوضع الليلي',
+        'hero.title': 'مرحبا بكم في Math Space',
+        'hero.desc': 'منصة تعليمية متكاملة لتعليم الرياضيات بمختلف المستويات الدراسية، تحت إشراف الأستاذ أحمد. نوفر دروسًا، تمارين، واختبارات لمساعدتك على إتقان الرياضيات.',
+        'hero.cta': 'ابدأ التعلم الآن',
+        'card.tc.desc': 'دروس الرياضيات الخاصة بمسلك العلوم للتلاميذ في الجذع المشترك علوم.',
+        'card.1s.desc': 'دروس الرياضيات الخاصة بمسلك العلوم للتلاميذ في السنة الأولى باكالوريا علوم.',
+        'card.2s.desc': 'دروس الرياضيات الخاصة بمسلك العلوم للتلاميذ في السنة الثانية باكالوريا علوم.',
+        'card.tcL.desc': 'دروس الرياضيات الخاصة بالمسلك المشترك للتلاميذ في الجذع المشترك.',
+        'card.1L.desc': 'دروس الرياضيات الخاصة بمسلك الآداب والعلوم الإنسانية للتلاميذ في السنة الأولى باكالوريا.',
+        'card.2L.desc': 'دروس الرياضيات الخاصة بمسلك الآداب والعلوم الإنسانية للتلاميذ في السنة الثانية باكالوريا.',
+        'ui.s1': 'الفصل الأول',
+        'ui.s2': 'الفصل الثاني',
+        'feat.title': 'مميزات منصتنا',
+        'feat.desc': 'نقدم لكم أفضل الطرق لتعلم الرياضيات بسهولة وفعالية',
+        'feat.courses': 'دروس شاملة',
+        'feat.courses.desc': 'دروس مفصلة تغطي كل جوانب المنهج الدراسي',
+        'feat.pdf.desc': 'تحميل ملخصات الدروس بصيغة PDF للطباعة',
+        'feat.exo': 'تمارين متنوعة',
+        'feat.exo.desc': 'تمارين مع الحلول لتطبيق ما تعلمته',
+        'feat.video': 'فيديوهات تعليمية',
+        'feat.video.desc': 'شروحات فيديو لتبسيط المفاهيم المعقدة',
+        'lessons.title': 'دروس الرياضيات',
+        'lessons.col.title': 'اسم الدرس',
+        'lessons.col.downloads': 'التحميلات',
+        'ui.back': 'العودة إلى المستويات',
+        'admin.login': 'تسجيل الدخول للإدارة',
+        'admin.email': 'البريد الإلكتروني',
+        'admin.pass': 'كلمة المرور',
+        'admin.loginBtn': 'تسجيل الدخول',
+        'admin.panel': 'لوحة إدارة المحتوى',
+        'admin.level': 'المستوى',
+        'admin.semester': 'الفصل',
+        'admin.lessonNo': 'رقم الدرس',
+        'admin.lessonTitle': 'عنوان الدرس',
+        'admin.upload': 'رفع الملفات',
+        'footer.aboutTitle': 'عن Math Space',
+        'footer.about1': 'منصة تعليمية متخصصة في تدريس الرياضيات بمختلف المستويات الدراسية، تحت إشراف الأستاذ أحمد.',
+        'footer.about2': 'نهدف إلى تبسيط الرياضيات وجعلها متاحة للجميع.',
+        'footer.links': 'روابط سريعة',
+        'footer.contact': 'اتصل بنا',
+        'footer.addr': 'طنجة، المغرب',
+        'footer.rights': 'جميع الحقوق محفوظة',
+        'btn.pdf': 'تحميل PDF',
+        'btn.word': 'تحميل Word',
+        'lessons.none': 'لا توجد دروس لهذا المستوى والفصل.'
+      },
+      fr: {
+        'brand.title': 'Math Space',
+        'brand.subtitle': 'Prof Ahmed | Math',
+        'nav.home': 'Accueil',
+        'nav.levels': 'Niveaux',
+        'nav.admin': "Panneau d'administration",
+        'ui.dark': 'Mode sombre',
+        'hero.title': 'Bienvenue sur Math Space',
+        'hero.desc': "Une plateforme complète d'apprentissage des mathématiques pour tous les niveaux, supervisée par le Professeur Ahmed. Cours, exercices et évaluations pour maîtriser les maths.",
+        'hero.cta': 'Commencer maintenant',
+        'card.tc.desc': 'Cours de mathématiques pour le Tronc Commun Scientifique.',
+        'card.1s.desc': 'Cours de mathématiques pour 1ère Bac Sciences.',
+        'card.2s.desc': 'Cours de mathématiques pour 2ème Bac Sciences.',
+        'card.tcL.desc': 'Cours de mathématiques pour le Tronc Commun Lettres.',
+        'card.1L.desc': 'Cours de mathématiques pour 1ère Bac Lettres.',
+        'card.2L.desc': 'Cours de mathématiques pour 2ème Bac Lettres.',
+        'ui.s1': 'Semestre 1',
+        'ui.s2': 'Semestre 2',
+        'feat.title': 'Fonctionnalités de la plateforme',
+        'feat.desc': 'Nous vous offrons les meilleurs moyens pour apprendre facilement et efficacement',
+        'feat.courses': 'Cours complets',
+        'feat.courses.desc': 'Des cours détaillés qui couvrent tout le programme',
+        'feat.pdf.desc': 'Télécharger des résumés de cours en PDF',
+        'feat.exo': 'Exercices variés',
+        'feat.exo.desc': 'Exercices corrigés pour mettre en pratique',
+        'feat.video': 'Vidéos pédagogiques',
+        'feat.video.desc': 'Explications pour simplifier les concepts',
+        'lessons.title': 'Cours de mathématiques',
+        'lessons.col.title': 'Titre du cours',
+        'lessons.col.downloads': 'Téléchargements',
+        'ui.back': 'Retour aux niveaux',
+        'admin.login': "Connexion d'administration",
+        'admin.email': 'E-mail',
+        'admin.pass': 'Mot de passe',
+        'admin.loginBtn': 'Se connecter',
+        'admin.panel': 'Gestion de contenu',
+        'admin.level': 'Niveau',
+        'admin.semester': 'Semestre',
+        'admin.lessonNo': 'Numéro du cours',
+        'admin.lessonTitle': 'Titre du cours',
+        'admin.upload': 'Téléverser les fichiers',
+        'footer.aboutTitle': 'À propos de Math Space',
+        'footer.about1': "Plateforme dédiée à l'enseignement des mathématiques à tous les niveaux sous la supervision du Professeur Ahmed.",
+        'footer.about2': 'Notre objectif est de simplifier les maths et les rendre accessibles à tous.',
+        'footer.links': 'Liens utiles',
+        'footer.contact': 'Contact',
+        'footer.addr': 'Tanger, Maroc',
+        'footer.rights': 'Tous droits réservés',
+        'btn.pdf': 'Télécharger PDF',
+        'btn.word': 'Télécharger Word',
+        'lessons.none': "Aucun cours disponible pour ce niveau et ce semestre."
+      }
+    };
+
+    /* Lessons Catalog per language (titles only) */
+    const catalogAR = {
+      "TC Science": { S1: [
+        "مجموعات الأعداد IN وZ وQ وID وIR",
+        "الحسابيات في IN",
+        "الحساب المتجهي في المستوى",
+        "الإسقاط في المستوى",
+        "الترتيب في IR",
+        "المستقيم في المستوى",
+        "المتعددات الحدودية",
+        "معادلات ومتراجحات وأنظمة",
+        "حساب مثلثاتي 1 (قواعد الحساب المثلثي)"
+      ], S2: [
+        "حساب مثلثاتي 2 (معادلات ومتراجحات مثلثية)",
+        "عموميات حول الدوال",
+        "تحويلات المستوى",
+        "الجداء السلمي",
+        "الهندسة في الفضاء",
+        "الإحصاء"
+      ] },
+      "1 bac Science": { S1: [
+        "مفاهيم في المنطق",
+        "عموميات حول الدوال",
+        "مركز الثقل في المستوى",
+        "الجداء السلمي في المستوى",
+        "المتتاليات العددية",
+        "الحساب المثلثي"
+      ], S2: [
+        "الدوران في المستوى",
+        "نهايات دالة عددية",
+        "اشتقاق دالة عددية",
+        "التمثيل البياني لدالة",
+        "متجهات الفضاء",
+        "الهندسة التحليلية في الفضاء"
+      ] },
+      "2 bac Science": { S1: [
+        "نهايات واشتقاق (تذكير)", "الاستمرارية (1)", "الاستمرارية (2)",
+        "الاشتقاق ودراسة الدوال (1)", "الاشتقاق ودراسة الدوال (2)",
+        "نهاية متتالية", "الدوال الأصلية", "الدوال اللوغاريتمية", "الأعداد المركبة (1)"
+      ], S2: [
+        "الدوال الأسية", "الأعداد المركبة (2)", "الحساب التكاملي",
+        "المعادلات التفاضلية", "الهندسة في الفضاء 1: الجداء السلمي",
+        "الهندسة في الفضاء 2: الجداء المتجهي", "التعداد", "الاحتمالات"
+      ] },
+      "Tronc commun letter": { S1: [
+        "العمليات في مجموعة الأعداد الحقيقية",
+        "الترتيب في مجموعة الأعداد الحقيقية",
+        "المعادلات والمتراجحات والأنظمة",
+        "الإحصاء"
+      ], S2: [
+        "الدوال العددية", "المعلم في المستوى", "المستقيم في المستوى", "فروض الدورة الثانية"
+      ] },
+      "1 bac letter": { S1: [
+        "المحتوى بريميوم (الرياضيات أولى باك آداب)", "مبادئ في المنطق",
+        "الحساب العددي والتناسبية", "عموميات حول الدوال", "المتتاليات العددية"
+      ], S2: [
+        "التعداد", "نهاية دالة عددية", "الاشتقاق", "دراسة الدوال وتمثيلها"
+      ] },
+      "2 bac letter": { S1: [
+        "المتتاليات العددية", "الاشتقاق ودراسة الدوال", "نهاية متتالية",
+        "الدوال اللوغاريتمية", "الدوال الأسية النيبيرية"
+      ], S2: [ "الاحتمالات" ] }
+    };
+
+    const catalogFR = {
+      "TC Science": { S1: [
+        "Ensembles de nombres IN, Z, Q, ID et IR",
+        "Arithmétique dans IN",
+        "Calcul vectoriel dans le plan",
+        "Projection dans le plan",
+        "Ordre dans IR",
+        "La droite dans le plan",
+        "Polynômes",
+        "Équations, inéquations et systèmes",
+        "Trigonométrie 1 (Règles de calcul)"
+      ], S2: [
+        "Trigonométrie 2 (Équations et inéquations)",
+        "Généralités sur les fonctions",
+        "Transformations du plan",
+        "Produit scalaire",
+        "Géométrie dans l'espace",
+        "Statistiques"
+      ] },
+      "1 bac Science": { S1: [
+        "Notions de logique", "Généralités sur les fonctions",
+        "Barycentre dans le plan", "Produit scalaire dans le plan",
+        "Suites numériques", "Calcul trigonométrique"
+      ], S2: [
+        "Rotation dans le plan", "Limites d’une fonction",
+        "Dérivation d’une fonction", "Représentation graphique",
+        "Vecteurs de l'espace", "Géométrie analytique de l'espace"
+      ] },
+      "2 bac Science": { S1: [
+        "Limites et dérivation (Rappel)", "Continuité (1)", "Continuité (2)",
+        "Étude des fonctions (1)", "Étude des fonctions (2)",
+        "Limite d'une suite", "Primitives", "Fonctions logarithmiques", "Nombres complexes (1)"
+      ], S2: [
+        "Fonctions exponentielles", "Nombres complexes (2)", "Calcul intégral",
+        "Équations différentielles", "Géométrie de l’espace 1 : Produit scalaire",
+        "Géométrie de l’espace 2 : Produit vectoriel", "Dénombrement", "Probabilités"
+      ] },
+      "Tronc commun letter": { S1: [
+        "Opérations dans R", "Ordre dans R", "Équations, inéquations et systèmes", "Statistiques"
+      ], S2: [
+        "Fonctions numériques", "Repère du plan", "Droite du plan", "Devoirs S2"
+      ] },
+      "1 bac letter": { S1: [
+        "Contenu Premium (1ère Bac Lettres)", "Notions de logique",
+        "Calcul numérique & proportionnalité", "Généralités sur les fonctions", "Suites numériques"
+      ], S2: [
+        "Dénombrement", "Limite d’une fonction", "Dérivation", "Étude et représentation des fonctions"
+      ] },
+      "2 bac letter": { S1: [
+        "Suites numériques", "Dérivation & étude des fonctions", "Limite d’une suite",
+        "Fonctions logarithmiques", "Fonctions exponentielles népériennes"
+      ], S2: [ "Probabilités" ] }
+    };
+
+    /* ===================== State ===================== */
+    let currentLang = localStorage.getItem('lang') || 'ar';
+    let selectedLevel = "";
+    let selectedSemester = "";
+
+    /* ===================== Page Routing ===================== */
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+      const el = document.getElementById(`${pageId}-page`);
+      if (el) el.classList.remove('hidden');
+      if (pageId === 'levels') document.title = (currentLang==='fr' ? 'Niveaux - Math Space' : 'المستويات - Math Space');
+    }
+
+    function selectLevel(level, semester) {
+      selectedLevel = level; selectedSemester = semester;
+      const title = document.getElementById('lessons-page-title');
+      title.textContent = (currentLang==='fr' ? `Cours ${level} - ${semester}` : `دروس ${level} - ${semester}`);
+      document.getElementById('breadcrumb-level').textContent = level;
+      document.getElementById('breadcrumb-semester').textContent = semester;
+      loadLessons(level, semester);
+      showPage('lessons');
+    }
+
+    function scrollToLevels() {
+      const levelsSection = document.getElementById('levels-section');
+      if (!levelsSection) return;
+      const y = levelsSection.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({ top: y - 100, behavior: 'smooth' });
+    }
+
+    function backToLevels() {
+      showPage('home');
+      setTimeout(() => {
+        const levelsSection = document.getElementById('levels-section');
+        if (levelsSection) {
+          const y = levelsSection.getBoundingClientRect().top + window.scrollY;
+          window.scrollTo({ top: y - 90, behavior: 'smooth' });
+        }
+      }, 120);
+    }
+
+    /* ===================== Lessons CRUD ===================== */
+    async function loadLessons(level, semester) {
+      const list = document.getElementById('lessons-list');
+      list.innerHTML = '';
+      const catalog = (currentLang==='fr' ? catalogFR : catalogAR);
+      if (catalog[level] && catalog[level][semester]) {
+        const lessons = catalog[level][semester];
+        for (let i=0; i<lessons.length; i++) {
+          const lesson = lessons[i];
+          const tr = document.createElement('tr');
+          const lessonId = `${level}_${semester}_${i+1}`;
+          const { data, error } = await supabase.from('lessons').select('pdf_url, doc_url').eq('id', lessonId).single();
+          const pdfUrl = data?.pdf_url || '#';
+          const docUrl = data?.doc_url || '#';
+          tr.innerHTML = `
+            <td>${i+1}</td>
+            <td>${lesson}</td>
+            <td>
+              <div class="download-buttons">
+                <a href="${pdfUrl}" class="btn" target="_blank" data-t="btn.pdf">${t('btn.pdf')}</a>
+                <a href="${docUrl}" class="btn btn-primary" target="_blank" data-t="btn.word">${t('btn.word')}</a>
+              </div>
+            </td>`;
+          list.appendChild(tr);
+        }
+      } else {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="3" style="text-align:center;">${t('lessons.none')}</td>`;
+        list.appendChild(tr);
+      }
+    }
+
+    async function adminLogin() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const messageDiv = document.getElementById('login-message');
+      if (!email || !password) {
+        messageDiv.className = 'message error';
+        messageDiv.textContent = (currentLang==='fr' ? 'Veuillez remplir tous les champs.' : 'يرجى ملء جميع الحقول.');
+        return;
+      }
+      try {
+        messageDiv.className = 'message';
+        messageDiv.textContent = (currentLang==='fr' ? 'Connexion...' : 'جاري تسجيل الدخول...');
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        messageDiv.className = 'message success';
+        messageDiv.textContent = (currentLang==='fr' ? 'Connexion réussie !' : 'تم تسجيل الدخول بنجاح!');
+        setTimeout(() => { showPage('admin-panel'); }, 700);
+      } catch (err) {
+        messageDiv.className = 'message error';
+        messageDiv.textContent = (currentLang==='fr' ? 'Échec de connexion: ' : 'فشل تسجيل الدخول: ') + err.message;
+      }
+    }
+
+    async function uploadFiles() {
+      const level = document.getElementById('admin-level').value;
+      const semester = document.getElementById('admin-semester').value;
+      const lessonNumber = parseInt(document.getElementById('lesson-number').value);
+      const pdfFile = document.getElementById('pdf-file').files[0];
+      const docFile = document.getElementById('doc-file').files[0];
+      const messageDiv = document.getElementById('upload-message');
+
+      if (!level || !semester || !lessonNumber || (!pdfFile && !docFile)) {
+        messageDiv.className = 'message error';
+        messageDiv.textContent = (currentLang==='fr' ? 'Veuillez compléter les champs et choisir au moins un fichier.' : 'يرجى ملء جميع الحقول واختيار ملف واحد على الأقل.');
+        return;
+      }
+
+      try {
+        messageDiv.className = 'message';
+        messageDiv.textContent = (currentLang==='fr' ? 'Téléversement en cours...' : 'جاري رفع الملفات...');
+
+        const lessonId = `${level}_${semester}_${lessonNumber}`;
+        const titleCatalog = (currentLang==='fr' ? catalogFR : catalogAR);
+        const lessonTitle = titleCatalog[level]?.[semester]?.[lessonNumber - 1] || (currentLang==='fr' ? `Cours ${lessonNumber}` : `درس ${lessonNumber}`);
+        const links = {};
+
+        if (pdfFile) {
+          const pdfPath = `lessons/${level}/${semester}/${lessonNumber}/document.pdf`;
+          const { error: pdfError } = await supabase.storage.from('math-space').upload(pdfPath, pdfFile, { upsert: true });
+          if (pdfError && pdfError.message !== 'The resource already exists') throw pdfError;
+          const { data: pdfUrl } = supabase.storage.from('math-space').getPublicUrl(pdfPath);
+          links.pdf_url = pdfUrl.publicUrl;
+        }
+        if (docFile) {
+          const docPath = `lessons/${level}/${semester}/${lessonNumber}/document.docx`;
+          const { error: docError } = await supabase.storage.from('math-space').upload(docPath, docFile, { upsert: true });
+          if (docError && docError.message !== 'The resource already exists') throw docError;
+          const { data: docUrl } = supabase.storage.from('math-space').getPublicUrl(docPath);
+          links.doc_url = docUrl.publicUrl;
+        }
+
+        const { error } = await supabase.from('lessons').upsert({
+          id: lessonId,
+          level,
+          semester,
+          lesson_number: lessonNumber,
+          title: lessonTitle,
+          ...links,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'id' });
+        if (error) throw error;
+
+        messageDiv.className = 'message success';
+        messageDiv.textContent = (currentLang==='fr' ? 'Fichiers téléversés et liens enregistrés !' : 'تم رفع الملفات وحفظ الروابط بنجاح!');
+        document.getElementById('pdf-file').value = '';
+        document.getElementById('doc-file').value = '';
+      } catch (err) {
+        messageDiv.className = 'message error';
+        messageDiv.textContent = (currentLang==='fr' ? 'Échec du téléversement: ' : 'فشل في رفع الملفات: ') + err.message;
+        console.error(err);
+      }
+    }
+
+    document.getElementById('admin-level').addEventListener('change', updateLessonTitle);
+    document.getElementById('admin-semester').addEventListener('change', updateLessonTitle);
+    document.getElementById('lesson-number').addEventListener('input', updateLessonTitle);
+
+    function updateLessonTitle() {
+      const level = document.getElementById('admin-level').value;
+      const semester = document.getElementById('admin-semester').value;
+      const lessonNumber = document.getElementById('lesson-number').value;
+      const lessonTitle = document.getElementById('lesson-title');
+      const cat = (currentLang==='fr' ? catalogFR : catalogAR);
+      if (cat[level] && cat[level][semester] && lessonNumber > 0 && lessonNumber <= cat[level][semester].length) {
+        lessonTitle.value = cat[level][semester][lessonNumber - 1];
+      } else {
+        lessonTitle.value = (currentLang==='fr' ? 'Numéro invalide' : 'رقم الدرس غير صحيح');
+      }
+    }
+
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') {
+        if (window.location.hash === '#admin') showPage('admin-panel');
+      } else if (event === 'SIGNED_OUT') {
+        if (window.location.hash === '#admin') showPage('admin-login');
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Theme
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') document.documentElement.classList.add('dark');
+
+      // Language
+      const langSelect = document.getElementById('lang-select');
+      langSelect.value = currentLang;
+      applyLang(currentLang);
+
+      showPage('home');
+      updateLessonTitle();
+      if (window.location.hash === '#admin') showPage('admin-login');
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session && window.location.hash === '#admin') showPage('admin-panel');
+      });
+    });
+
+    /* ===================== i18n Utils ===================== */
+    function t(key) { return i18n[currentLang][key] || key; }
+
+    function applyLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('lang', lang);
+      const root = document.documentElement;
+      root.lang = lang;
+      root.dir = (lang === 'ar') ? 'rtl' : 'ltr';
+      // Swap text
+      document.querySelectorAll('[data-t]').forEach(el => {
+        const key = el.getAttribute('data-t');
+        if (i18n[lang] && i18n[lang][key]) {
+          el.textContent = i18n[lang][key];
+        }
+      });
+      // If we are on lessons page, relist with correct titles
+      if (!document.getElementById('lessons-page').classList.contains('hidden') && selectedLevel && selectedSemester) {
+        selectLevel(selectedLevel, selectedSemester);
+      }
+      // Update admin lesson title preview
+      updateLessonTitle();
+    }
+
+    document.getElementById('lang-select').addEventListener('change', (e) => {
+      applyLang(e.target.value);
+    });
+
+    // Theme toggle
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      document.documentElement.classList.toggle('dark');
+      const active = document.documentElement.classList.contains('dark');
+      localStorage.setItem('theme', active ? 'dark' : 'light');
+    });
+  </script>
+</body>
+</html>
